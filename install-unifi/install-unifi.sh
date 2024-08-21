@@ -12,7 +12,7 @@ RC_SCRIPT_URL="https://raw.githubusercontent.com/unofficial-unifi/unifi-pfsense/
 
 # List of valid/supported mongodb package names, sorted with the latest being first
 # As UniFi adds support for new mongodb versions, just prepend them to this list
-SUPPORTED_MONGODB_PACKAGES="mongodb70 mongodb60 mongodb50 mongodb44 mongodb42 mongodb40 mongodb"
+SUPPORTED_MONGODB_PACKAGES="mongodb50 mongodb44 mongodb42 mongodb40 mongodb"
 
 # If pkg-ng is not yet installed, bootstrap it:
 if ! /usr/sbin/pkg -N 2> /dev/null; then
