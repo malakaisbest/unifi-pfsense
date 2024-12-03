@@ -17,6 +17,12 @@ load_rc_config ${name}
 
 unifi_start()
 {
+openssl pkcs12 -export -inkey /cf/conf/acme/WifiController.key -in /cf/conf/acme/WifiController.fullchain -out /usr/local/UniFi/crt/cert.p12 -name unifi -password pass:temppass
+
+  /usr/local/bin/keytool -importkeystore -deststorepass aircontrolenterprise -destkeypass aircontrolenterprise -destkeystore /usr/local/UniFi/data/keystore -srckeystore /usr/local/UniFi/crt/cert.p12 -srcstoretype PKCS12 -srcstorepass temppass -alias unifi -noprompt
+
+#adding Certificate file to Unifi Controller.
+
   if checkyesno ${rcvar}; then
     echo "Starting UniFi controller. "
 
