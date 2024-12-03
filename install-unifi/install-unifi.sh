@@ -39,7 +39,7 @@ FREEBSD_PACKAGE_LIST_URL="${FREEBSD_PACKAGE_URL}packagesite.pkg"
 # First let's try the rc script if it exists:
 if [ -f /usr/local/etc/rc.d/unifi.sh ]; then
   echo -n "Stopping the unifi service..."
-  /usr/sbin/service unifi.sh stop
+ # /usr/sbin/service unifi.sh stop
   echo " done."
 fi
 
