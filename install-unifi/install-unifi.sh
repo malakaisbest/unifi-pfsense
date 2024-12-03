@@ -1,3 +1,4 @@
+
 #!/bin/sh
 
 # install-unifi.sh
@@ -9,9 +10,6 @@ UNIFI_SOFTWARE_URL="https://dl.ui.com/unifi/8.6.9/UniFi.unix.zip"
 
 # The rc script associated with this branch or fork:
 RC_SCRIPT_URL="https://raw.githubusercontent.com/malakaisbest/unifi-pfsense/refs/heads/master/rc.d/unifi.sh"
-
-CURRENT_MONGODB_VERSION=mongodb40
-#CURRENT_MONGODB_VERSION=mongodb36
 
 # If pkg-ng is not yet installed, bootstrap it:
 if ! /usr/sbin/pkg -N 2> /dev/null; then
@@ -30,16 +28,16 @@ fi
 ABI=`/usr/sbin/pkg config abi`
 
 # FreeBSD package source:
-FREEBSD_PACKAGE_URL="https://pkg.freebsd.org/${ABI}/latest/"
+FREEBSD_PACKAGE_URL="https://pkg.freebsd.org/${ABI}/latest/All/"
 
 # FreeBSD package list:
-FREEBSD_PACKAGE_LIST_URL="${FREEBSD_PACKAGE_URL}packagesite.pkg"
+FREEBSD_PACKAGE_LIST_URL="https://pkg.freebsd.org/${ABI}/latest/packagesite.txz"
 
 # Stop the controller if it's already running...
 # First let's try the rc script if it exists:
 if [ -f /usr/local/etc/rc.d/unifi.sh ]; then
   echo -n "Stopping the unifi service..."
- # /usr/sbin/service unifi.sh stop
+  /usr/sbin/service unifi.sh stop
   echo " done."
 fi
 
@@ -86,14 +84,24 @@ echo -n "Mounting new filesystems..."
 echo " done."
 
 
-echo "Removing discontinued packages..."
-old_mongos=`pkg info | grep mongodb | grep -v ${CURRENT_MONGODB_VERSION}`
-for old_mongo in "${old_mongos}"; do
-  package=`echo "$old_mongo" | cut -d' ' -f1`
-  pkg unlock -yq ${package}
-  env ASSUME_ALWAYS_YES=YES /usr/sbin/pkg delete ${package}
-done
+#remove mongodb34 - discontinued
+echo "Removing packages discontinued..."
+if [ `pkg info | grep -c mongodb-` -eq 1 ]; then
+        pkg unlock -yq mongodb
+	env ASSUME_ALWAYS_YES=YES /usr/sbin/pkg delete mongodb
+fi
+
+if [ `pkg info | grep -c mongodb34-` -eq 1 ]; then
+        pkg unlock -yq mongodb34 
+	env ASSUME_ALWAYS_YES=YES /usr/sbin/pkg delete mongodb34
+fi
+
+if [ `pkg info | grep -c mongodb36-` -eq 1 ]; then
+        pkg unlock -yq mongodb36
+	env ASSUME_ALWAYS_YES=YES /usr/sbin/pkg delete mongodb36
+fi
 echo " done."
+
 
 
 
@@ -104,44 +112,43 @@ echo "Installing required packages..."
 #env ASSUME_ALWAYS_YES=YES /usr/sbin/pkg install mongodb openjdk unzip pcre v8 snappy
 
 fetch ${FREEBSD_PACKAGE_LIST_URL}
-tar vfx packagesite.pkg
+tar vfx packagesite.txz
 
 AddPkg () {
-  pkgname=$1
-  pkg unlock -yq $pkgname
-  pkginfo=`grep "\"name\":\"$pkgname\"" packagesite.yaml`
-  pkgvers=`echo $pkginfo | pcregrep -o1 '"version":"(.*?)"' | head -1`
-  pkgurl="${FREEBSD_PACKAGE_URL}`echo $pkginfo | pcregrep -o1 '"path":"(.*?)"' | head -1`"
+ 	pkgname=$1
+        pkg unlock -yq $pkgname
+ 	pkginfo=`grep "\"name\":\"$pkgname\"" packagesite.yaml`
+ 	pkgvers=`echo $pkginfo | pcregrep -o1 '"version":"(.*?)"' | head -1`
 
-  # compare version for update/install
-  if [ `pkg info | grep -c $pkgname-$pkgvers` -eq 1 ]; then
-    echo "Package $pkgname-$pkgvers already installed."
-  else
-    env ASSUME_ALWAYS_YES=YES /usr/sbin/pkg add -f "$pkgurl" || exit 1
+	# compare version for update/install
+ 	if [ `pkg info | grep -c $pkgname-$pkgvers` -eq 1 ]; then
+	     echo "Package $pkgname-$pkgvers already installed."
+	else
+	     env ASSUME_ALWAYS_YES=YES /usr/sbin/pkg add -f ${FREEBSD_PACKAGE_URL}${pkgname}-${pkgvers}.txz
 
-    # if update openjdk8 then force detele snappyjava to reinstall for new version of openjdk
-    if [ "$pkgname" == "openjdk8" ]; then
-      pkg unlock -yq snappyjava
-      env ASSUME_ALWAYS_YES=YES /usr/sbin/pkg delete snappyjava
-    fi
-  fi
-  pkg lock -yq $pkgname
+	     # if update openjdk8 then force detele snappyjava to reinstall for new version of openjdk
+	     if [ "$pkgname" == "openjdk8" ]; then
+	          pkg unlock -yq snappyjava
+	          env ASSUME_ALWAYS_YES=YES /usr/sbin/pkg delete snappyjava
+             fi
+        fi
+        pkg lock -yq $pkgname
 }
 
 #Add the following Packages for installation or reinstallation (if something was removed)
 AddPkg png
-AddPkg brotli
 AddPkg freetype2
 AddPkg fontconfig
 AddPkg alsa-lib
 AddPkg mpdecimal
-#AddPkg python37
+AddPkg python37
 AddPkg libfontenc
 AddPkg mkfontscale
 AddPkg dejavu
 AddPkg giflib
 AddPkg xorgproto
 AddPkg libXdmcp
+AddPkg libpthread-stubs
 AddPkg libXau
 AddPkg libxcb
 AddPkg libICE
@@ -162,7 +169,7 @@ AddPkg snappy
 AddPkg cyrus-sasl
 AddPkg icu
 AddPkg boost-libs
-AddPkg ${CURRENT_MONGODB_VERSION}
+AddPkg mongodb40
 AddPkg unzip
 AddPkg pcre
 
@@ -193,7 +200,7 @@ echo " done."
 # If partition size is < 4GB, add smallfiles option to mongodb
 echo -n "Checking partition size..."
 if [ `df -k | awk '$NF=="/"{print $2}'` -le 4194302 ]; then
-  echo -e "\nunifi.db.extraargs=--smallfiles\n" >> /usr/local/UniFi/data/system.properties
+	echo -e "\nunifi.db.extraargs=--smallfiles\n" >> /usr/local/UniFi/data/system.properties
 fi
 echo " done."
 
