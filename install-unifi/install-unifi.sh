@@ -10,7 +10,7 @@ UNIFI_SOFTWARE_URL="https://dl.ui.com/unifi/8.6.9/UniFi.unix.zip"
 # The rc script associated with this branch or fork:
 RC_SCRIPT_URL="https://raw.githubusercontent.com/malakaisbest/unifi-pfsense/refs/heads/master/rc.d/unifi.sh"
 
-CURRENT_MONGODB_VERSION=mongodb42
+CURRENT_MONGODB_VERSION=mongodb40
 #CURRENT_MONGODB_VERSION=mongodb36
 
 # If pkg-ng is not yet installed, bootstrap it:
@@ -162,7 +162,7 @@ AddPkg snappy
 AddPkg cyrus-sasl
 AddPkg icu
 AddPkg boost-libs
-#AddPkg ${CURRENT_MONGODB_VERSION}
+AddPkg ${CURRENT_MONGODB_VERSION}
 AddPkg unzip
 AddPkg pcre
 
