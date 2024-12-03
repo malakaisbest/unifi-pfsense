@@ -11,6 +11,7 @@ UNIFI_SOFTWARE_URL="https://dl.ui.com/unifi/8.6.9/UniFi.unix.zip"
 RC_SCRIPT_URL="https://raw.githubusercontent.com/malakaisbest/unifi-pfsense/refs/heads/master/rc.d/unifi.sh"
 
 CURRENT_MONGODB_VERSION=mongodb42
+#CURRENT_MONGODB_VERSION=mongodb36
 
 # If pkg-ng is not yet installed, bootstrap it:
 if ! /usr/sbin/pkg -N 2> /dev/null; then
